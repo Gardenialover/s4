@@ -1,10 +1,13 @@
 _name_: forex
-size:
-  - 384
-  - 96
-  - 96
-features: 'S'
-target: 'OT'
+
+data_dir: './data/forex'  
+seq_len: 30  
+pred_len: 1  
+val_split: 0.1  
+seed: 42  
+batch_size: 1  
+normalize: true 
+
 variant: 0
 scale: True
 inverse: False

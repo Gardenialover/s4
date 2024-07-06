@@ -3,11 +3,11 @@ import numpy as np
 import pandas as pd
 from torch.utils.data import Dataset
 from torch.utiles.data import DataLoader,Subset
-from src.dataloaders.base import default_data_path, ImageResolutionSequenceDataset, ResolutionSequenceDataset, SequenceDataset
+from src.dataloaders.base import default_data_path, SequenceDataset
 
-class ForexDataset(SequenceDataset):
-    def __init__(self, csv_file, data_dir, seq_len=50, pred_len = 1):
-        self.seq_len = 50
+class ForexDataset(Dataset):
+    def __init__(self, csv_file, data_dir, seq_len=30, pred_len = 1):
+        self.seq_len = 30
         self.pred_len = 1
         self.data = pd.read_csv(os.path.join(data_dir,csv_file), header = None)
         self.data.columns = ['date', 'time', 'open', 'high', 'low', 'close', 'amount']
@@ -28,7 +28,11 @@ class ForexDataset(SequenceDataset):
 
 class ForexSequenceDataset(SequenceDataset):
     _name_ = 'forex'
+    d_input = 1
+    d_output = 1
+    l_output = 0
     
+    @property
     def init_defaults(self):
         return {
             "val_split": 0.1,
@@ -40,7 +44,7 @@ class ForexSequenceDataset(SequenceDataset):
 
     def setup(self):
         csv_files = [file for file in os.listdir(self.data_dir) if file.endwith(".csv")]
-        full_dataset = ForexRawDataset(csv_files[0], self.data_dir, seq_len = self.seq_len, pred_len = self.pred_len)
+        full_dataset = ForexDataset(csv_files[0], self.data_dir, seq_len = self.seq_len, pred_len = self.pred_len)
         total_len = len(full_dataset)
         train_len = int(total_len * (1.0 - self.val_split))
         val_len = total_len - train_len
