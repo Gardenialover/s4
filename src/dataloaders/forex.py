@@ -2,7 +2,7 @@ import os
 import numpy as np
 import pandas as pd
 from torch.utils.data import Dataset
-from torch.utiles.data import DataLoader,Subset
+from torch.utils.data import DataLoader,Subset
 from src.dataloaders.base import default_data_path, SequenceDataset
 
 class ForexDataset(Dataset):
@@ -43,7 +43,7 @@ class ForexSequenceDataset(SequenceDataset):
         }
 
     def setup(self):
-        csv_files = [file for file in os.listdir(self.data_dir) if file.endwith(".csv")]
+        csv_files = [file for file in os.listdir(self.data_dir) if file.endswith(".csv")]
         full_dataset = ForexDataset(csv_files[0], self.data_dir, seq_len = self.seq_len, pred_len = self.pred_len)
         total_len = len(full_dataset)
         train_len = int(total_len * (1.0 - self.val_split))

@@ -1,18 +1,19 @@
-_name_: forex
-
-data_dir: './data/forex'  
-seq_len: 30  
-pred_len: 1  
-val_split: 0.1  
-seed: 42  
-batch_size: 1  
-normalize: true 
-
-variant: 0
-scale: True
-inverse: False
-timeenc: 0
-eval_stamp: False
-eval_mask: False
-# freq: 'h' # Shouldn't touch
-__l_max: ${eval:${.size.0}+${.size.2}}
+dataset:
+  _name_: forex
+  data_dir: ./data/informer/forex
+  seq_len: 30
+  pred_len: 1
+  val_split: 0.1
+  seed: 42
+  batch_size: 1
+  normalize: true
+  size:
+    - 384
+    - 96
+    - 96
+  variant: 0
+  scale: true
+  inverse: false
+  timeenc: 1
+  eval_stamp: false
+  eval_mask: false
