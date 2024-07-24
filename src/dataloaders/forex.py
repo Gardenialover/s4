@@ -12,7 +12,7 @@ class ForexDataset(Dataset):
         self.data = pd.read_csv(os.path.join(data_dir,csv_file), header = None)
         self.data.columns = ['date', 'time', 'open', 'high', 'low', 'close', 'amount']
         self.data['datetime'] = pd.to_datetime(self.data['date'] + ' ' + self.data['time'])
-        self.data_set_index('datetime', inplace = True)
+        self.data.set_index('datetime', inplace = True)
         self.data.drop(['date', 'time', 'high', 'low', 'close', 'amount'], axis=1, inplace=True)
         self.data = self.data[['open']]
         
@@ -41,6 +41,9 @@ class ForexSequenceDataset(SequenceDataset):
             "seq_len": 30,
             "pred_len": 1
         }
+    
+    def __init__(self, data_dir = None, seq_len = 30, pred_len = 1, **dataset_cfg):
+        super().__init__(_name_= self._name_, data_dir = data_dir, seq_len = seq_len, pred_len = pred_len, **dataset_cfg)
 
     def setup(self):
         csv_files = [file for file in os.listdir(self.data_dir) if file.endswith(".csv")]
