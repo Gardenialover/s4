@@ -464,6 +464,9 @@ class _Dataset_ECL(InformerDataset):
     def __init__(self, data_path="ECL.csv", target="MT_320", **kwargs):
         super().__init__(data_path=data_path, target=target, **kwargs)
 
+
+
+
 class InformerSequenceDataset(SequenceDataset):
 
     @property
@@ -624,3 +627,74 @@ class ECL(InformerSequenceDataset):
     variants = {
         0: "ECL.csv",
     }
+   
+
+### add Forex dataset and dataloader
+class _Dataset_Forex(InformerSequenceDataset):
+    def __init__(self, data_dir, seq_len, pred_len, **kwargs):
+        super().__init__(data_dir = data_dir, seq_len = seq_len, pred_len = pred_len, **kwargs)
+        self.forex_dataset = Forex(data_dir = data_dir, seq_len = seq_len, pred_len = pred_len, **kwargs)
+
+    def __len__(self):
+        return len(self.forex_dataset)
+    
+    def __getitem__(self, idx):
+        item = self.forex_dataset[idx]
+        input_seq = item['open'][:self.seq_len]
+        target_seq = item['open'][self.seq_len : self.seq_len + self.pred_len]
+        return input_seq, target_seq
+      
+import glob
+class Forex(InformerSequenceDataset):
+    _name_ = "forex"
+    _dataset_cls = _Dataset_Forex  
+    init_defaults = {
+        "size": None,
+        "features": "S",
+        "target": "open",
+        "variant": 0,
+        "scale": True,
+        "inverse": False,
+        "timeenc": 0,
+        "freq": "m",  # Since forex is typically minute data
+        "cols": None,
+    }
+    
+    variants = {
+        0: "DAT_MT_GBPAUD_M1_2018.csv",
+        1: "DAT_MT_GBPAUD_M1_2019.csv",
+    }
+    
+    def __init__(self, data_dir, seq_len, pred_len, **kwargs):
+        # Use the default initialization parameters if not provided
+        defaults = self.init_defaults.copy()
+        defaults.update(kwargs)
+        super().__init__(data_dir=data_dir, seq_len=seq_len, pred_len=pred_len, **defaults)
+        
+        # Load and preprocess the dataset
+        self.data = self.load_data(data_dir)
+        self.data = self.preprocess_data(self.data)
+
+    def load_data(self, data_dir):
+        all_files = glob.glob(os.path.join(data_dir, '*.csv'))
+        dfs = [pd.read_csv(f, header=None) for f in all_files]
+        data = pd.concat(dfs, ignore_index=True)
+        return data
+
+    def preprocess_data(self, data):
+        data.columns = ['date', 'time', 'open', 'high', 'low', 'close', 'amount']
+        data = data[['date', 'time', 'open']]
+        data['datetime'] = pd.to_datetime(data['date'] + ' ' + data['time'])
+        data.set_index('datetime', inplace=True)
+        data.sort_index(inplace=True)
+        data.drop(['date', 'time'], axis=1, inplace=True)
+        return data
+
+    def __len__(self):
+        return len(self.data)
+
+    def __getitem__(self, idx):
+        item = self.data.iloc[idx]
+        return item['open']
+
+
